@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import folium
-from streamlit_folium import st_folium
+
 
 def show():
     st.subheader("📁 Upload Dataset Penggunaan Listrik")
@@ -24,4 +24,5 @@ def show():
 
         pass
         
+
 
