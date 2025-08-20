@@ -18,16 +18,24 @@ def show():
         else:
             st.write("📌 Kolom yang digunakan untuk clustering:", ", ".join(numeric_cols))
 
-            X = df[numeric_cols]
+            # === Ambil data numerik dan drop NaN ===
+            X = df[numeric_cols].copy()
+            X = X.dropna()
+
+            if X.empty:
+                st.error("❌ Semua data numerik kosong atau mengandung NaN.")
+                return
+
+            # === Standardisasi data ===
             scaler = StandardScaler()
             X_scaled = scaler.fit_transform(X)
 
-            # === Langsung tampilkan grafik Elbow ===
+            # === Grafik Elbow ===
             st.markdown("### 📈 Grafik Elbow (Menentukan Jumlah Cluster Optimal)")
             wcss = []
             max_k = 10
             for i in range(1, max_k + 1):
-                kmeans_temp = KMeans(n_clusters=i, random_state=0)
+                kmeans_temp = KMeans(n_clusters=i, random_state=0, n_init="auto")
                 kmeans_temp.fit(X_scaled)
                 wcss.append(kmeans_temp.inertia_)
 
@@ -43,8 +51,9 @@ def show():
             # === Slider K ===
             k = st.slider("Pilih jumlah cluster (K):", min_value=2, max_value=10, value=3)
 
-            kmeans = KMeans(n_clusters=k, random_state=0)
-            df["Cluster"] = kmeans.fit_predict(X_scaled)
+            # === Clustering ===
+            kmeans = KMeans(n_clusters=k, random_state=0, n_init="auto")
+            df.loc[X.index, "Cluster"] = kmeans.fit_predict(X_scaled)
 
             # Urutkan hasil clustering berdasarkan kolom 'Cluster'
             df_sorted = df.sort_values(by="Cluster").reset_index(drop=True)
@@ -58,7 +67,7 @@ def show():
             st.session_state["clustered_data"] = df_sorted
 
             # ======== Silhouette Score =========
-            score = silhouette_score(X_scaled, df["Cluster"])
+            score = silhouette_score(X_scaled, df.loc[X.index, "Cluster"])
             st.info(f"🔎 Silhouette Score untuk K = {k}: **{score:.4f}**")
 
             if score > 0.7:
