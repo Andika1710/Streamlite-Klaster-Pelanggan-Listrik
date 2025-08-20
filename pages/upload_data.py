@@ -21,8 +21,3 @@ def show():
 
         # Tampilkan total jumlah data (baris)
         st.info(f"🔢 Total data: **{len(df)} baris**")
-
-        pass
-        
-
-
